@@ -1,42 +1,20 @@
-<img src="https://piwigo.org/plugins/piwigo-piwigodotorg/images/piwigo.org.svg" width="200" alt="Piwigo logo">
+A personal fork of [Piwigo](https://github.com/Piwigo/Piwigo), intended for modification to suit my own use case (Done/Desired changes are tracked in the issue tracker)
 
-Manage your photo library. Piwigo is open source photo gallery software for the web. Designed for organisations, teams and individuals.
+Unless you're 100% sure your requirements are the same as mine, you probably want the original project. 
 
-![screenshot](https://piwigo.org/screenshots/github-screenshot-2.10.jpg)
+This fork WILL include changes that break existing installations of the official project (that's why I made my own fork instead of submitting a PR to them). Do NOT try to "side-grade". 
 
-The [piwigo.org](https://piwigo.org) website introduces you to Piwigo. You'll find a demo, forums, wiki and news.
- 
-## Requirements
+## This Fork's Requirements
 
- * A webserver (Apache or nginx recommended)
- * PHP 5.3 or greater (7+ recommended)
- * MySQL 5 or greater or MariaDB equivalent
+ * A webserver (Apache)
+ * PHP 7.4 (eventually 8.1)
+ * MariaDB 10.1 or later
  * ImageMagick (recommended) or PHP GD
-
-## Quick start install
-
-### NetInstall
-
- * Download the [NetInstall script](https://piwigo.org/download/dlcounter.php?code=netinstall)
- * Transfer the script to your web space with any FTP client
- * Open the script in you web browser (for example http://example.com/piwigo-netinstall.php) and follow the steps
-
-[More information](https://piwigo.org/guides/install/netinstall)
-
-### Manual
-
- * Download the [latest stable version](https://piwigo.org/download/dlcounter.php?code=latest) and unzip it
- * Transfer everything to your web space with any FTP client
- * Open your website (for example http://example.com/piwigo) and follow the steps
-
-[More information](https://piwigo.org/guides/install/manual)
-
-If you do not have your own server, consider the [piwigo.com](https://piwigo.com/) hosting solution.
 
 ## Contributing
 
-Piwigo is widely driven by its community; if you want to improve the code, fork this repo and submit your changes to the `master` branch. See our [Contribution guide](https://github.com/Piwigo/Piwigo/blob/master/docs/CONTRIBUTING.md).
+Unless you're making changes to one of the breaking modifications, you're better off contributing to [The main project](https://github.com/Piwigo/Piwigo), instead. 
 
 ## License
 
-Piwigo is released under the GPL v2 license. See our [Copying details](https://github.com/Piwigo/Piwigo/blob/master/COPYING.txt).
+Piwigo is released under the GPL v2 license. See COPYING.TXT in repository.

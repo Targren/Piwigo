@@ -4,6 +4,8 @@ $(document).ready(() => {
 
   $("h1").append(`<span class='badge-number'>`+nb_albums+`</span>`);
 
+  console.log(formatedData);
+
   $('.tree').tree({
     data: formatedData,
     autoOpen : false,
@@ -98,6 +100,7 @@ $(document).ready(() => {
       "<div class='badge-container'>" 
         +"<i class='icon-blue icon-sitemap nb-subcats'></i>"
         +"<i class='icon-purple icon-picture nb-images'></i>"
+        +"<i class='icon-green icon-imagefolder-01 nb-sub-photos'></i>"
         +"<i class='icon-red icon-back-in-time last-update'>"+ node.last_updates +"</i>"
       +"</div>"
     )
@@ -118,6 +121,12 @@ $(document).ready(() => {
       cont.find(".last-update").text(node.last_updates);
     } else {
       cont.find(".last-update").hide();
+    }
+
+    if (node.nb_sub_photos) {
+      cont.find(".nb-sub-photos").text(node.nb_sub_photos);
+    } else {
+      cont.find(".nb-sub-photos").hide();
     }
 
     if (node.has_not_access) {
@@ -397,7 +406,8 @@ $(document).ready(() => {
         $('.tiptip').tipTip({
           delay: 0,
           fadeIn: 200,
-          fadeOut: 200
+          fadeOut: 200,
+          edgeOffset: 3
         });
 
         updateTitleBadge(nb_albums+1)
@@ -452,7 +462,8 @@ $(document).ready(() => {
   $('.tiptip').tipTip({
     delay: 0,
     fadeIn: 200,
-    fadeOut: 200
+    fadeOut: 200,
+    edgeOffset: 3
   });
 });
 
@@ -565,7 +576,8 @@ function openDeleteAlbumPopIn(cat_to_delete) {
         $('.tiptip').tipTip({
           delay: 0,
           fadeIn: 200,
-          fadeOut: 200
+          fadeOut: 200,
+          edgeOffset: 3
         });
 
         updateTitleBadge(nb_albums-1);
@@ -728,7 +740,8 @@ function applyMove(event) {
     $('.tiptip').tipTip({
       delay: 0,
       fadeIn: 200,
-      fadeOut: 200
+      fadeOut: 200,
+      edgeOffset: 3
     });
   })
     .catch(function (message) {
@@ -754,7 +767,8 @@ function applyMove(event) {
       $('.tiptip').tipTip({
         delay: 0,
         fadeIn: 200,
-        fadeOut: 200
+        fadeOut: 200,
+        edgeOffset: 3
       });
     })
 }

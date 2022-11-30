@@ -11,6 +11,7 @@
 const has_images_associated_outside = '{"delete album and all %d photos, even the %d associated to other albums"|@translate|escape:javascript}';
 const has_images_becomming_orphans = '{'delete album and the %d orphan photos'|@translate|escape:javascript}';
 const has_images_recursives = '{'delete only album, not photos'|@translate|escape:javascript}';
+const cat_nav = '{$CATEGORIES_NAV|escape:javascript}';
 
 {* <!-- CATEGORIES --> *}
 var categoriesCache = new CategoriesCache({
@@ -38,6 +39,8 @@ categoriesCache.selectize(jQuery('[data-selectize=categories]'), {
 });
 
 jQuery(document).ready(function() {
+  $("h1").append('<span title="{"Numeric identifier"|@translate}"> <span class="image-id">#{$CAT_ID}</span></span> <span style="letter-spacing:0" class="bc-albums">'+cat_nav+'</span>');
+
   jQuery(document).on('click', '.refreshRepresentative',  function(e) {
     var $this = jQuery(this);
     var method = 'pwg.categories.refreshRepresentative';
@@ -231,11 +234,6 @@ function cropImage() {
   background: none;
 }
 {/html_style}
-
-
-<div class="titrePage">
-  <h2>{'Edit album'|@translate} <span title="{'Numeric identifier'|@translate}">#{$CAT_ID}</span> <span style="letter-spacing:0">{$CATEGORIES_NAV}</span></h2>
-</div>
 
 <div id="catModify">
 

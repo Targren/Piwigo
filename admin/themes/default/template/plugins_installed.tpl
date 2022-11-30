@@ -39,13 +39,14 @@ const nothing_found = '{'No plugins found'|@translate|@escape:'javascript'}';
 const x_plugins_found = '{'%s plugins found'|@translate|@escape:'javascript'}';
 const plugin_found = '{'%s plugin found'|@translate|@escape:'javascript'}';
 const isWebmaster = {$isWebmaster};
+const view_selector = '{$view_selector}';
+const str_restore_def = '{'While restoring this plugin, it will be reset to its original parameters and associated data is going to be reset'|@translate|@escape:'javascript'}';
 
 const show_details = {if $show_details} true {else} false {/if};
-{/footer_script}
 
-<div class="titrePage">
-  <h2>{'Plugins'|@translate}</h2>
-</div>
+let searchParams = new URLSearchParams(window.location.search);
+let plugin_filter = searchParams.get('filter');
+{/footer_script}
 
 {if isset($plugins)}
 
@@ -65,10 +66,10 @@ const show_details = {if $show_details} true {else} false {/if};
 </div>
 
 <div class="AlbumViewSelector">
-    <input type="radio" name="layout" class="switchLayout" id="displayClassic" {if $smarty.cookies.pwg_plugin_manager_view == 'classic' || !$smarty.cookies.pwg_plugin_manager_view}checked{/if}/><label for="displayClassic"><span class="icon-pause firstIcon tiptip" title="{'Classic View'|translate}"></span></label><input type="radio" name="layout" class="switchLayout" id="displayLine" {if $smarty.cookies.pwg_plugin_manager_view == 'line'}checked{/if}/><label for="displayLine"><span class="icon-th-list tiptip" title="{'Line View'|translate}"></span></label><input type="radio" name="layout" class="switchLayout" id="displayCompact" {if $smarty.cookies.pwg_plugin_manager_view == 'compact'}checked{/if}/><label for="displayCompact"><span class="icon-th-large lastIcon tiptip" title="{'Compact View'|translate}"></span></label>
+    <input type="radio" name="layout" class="switchLayout" id="displayClassic" {if $view_selector == 'classic'}checked{/if}/><label for="displayClassic"><span class="icon-pause firstIcon tiptip" title="{'Classic View'|translate}"></span></label><input type="radio" name="layout" class="switchLayout" id="displayLine" {if $view_selector== 'line'}checked{/if}/><label for="displayLine"><span class="icon-th-list tiptip" title="{'Line View'|translate}"></span></label><input type="radio" name="layout" class="switchLayout" id="displayCompact" {if $view_selector == 'compact'}checked{/if}/><label for="displayCompact"><span class="icon-th-large lastIcon tiptip" title="{'Compact View'|translate}"></span></label>
 </div>  
 
-<div class="pluginContainer {if $smarty.cookies.pwg_plugin_manager_view == 'classic-form'} classic-form {elseif $smarty.cookies.pwg_plugin_manager_view == 'line-form'} line-form {elseif $smarty.cookies.pwg_plugin_manager_view == 'compact-form'} compact-form {else} {/if}">
+<div class="pluginContainer {if $view_selector == 'classic'} classic-form {elseif $view_selector == 'line'} line-form {elseif $view_selector == 'compact'} compact-form {else} {/if}">
 
 {foreach from=$plugins item=plugin name=plugins_loop}
 
@@ -162,7 +163,7 @@ const show_details = {if $show_details} true {else} false {/if};
         <div class="pluginDescCompact">
           {$plugin.DESC}
         </div>
-          <a class="dropdown-option icon-back-in-time plugin-restore separator-top">{'Restore'|@translate}</a>
+          <a class="dropdown-option icon-back-in-time plugin-restore separator-top tiptip" title="{'While restoring this plugin, it will be reset to its original parameters and associated data is going to be reset'|@translate}">{'Restore'|@translate}</a>
           <a class="dropdown-option icon-trash delete-plugin-button separator-top">{'Delete'|@translate}</a>
       </div>
       <div class="pluginName" data-title="{$plugin.NAME}">

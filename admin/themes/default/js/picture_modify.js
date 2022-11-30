@@ -15,7 +15,8 @@ $(document).ready(function () {
       $("#linkedAlbumSearch .search-cancel-linked-album").hide();
     }
 
-    if ($(this).val().length > 2) {
+    // Search input value length required to start searching
+    if ($(this).val().length > 0) {
       linked_albums_search($(this).val());
     } else {
       $(".limitReached").html(str_no_search_in_progress);
@@ -47,6 +48,7 @@ function linked_albums_open() {
   $(".search-input").val("");
   $(".search-input").focus();
   $("#searchResult").empty();
+  $(".limitReached").html(str_no_search_in_progress);
 }
 function linked_albums_search(searchText) {
   $(".linkedAlbumPopInContainer .searching").show();
@@ -88,7 +90,7 @@ function fill_results(cats) {
   $("#searchResult").empty();
   cats.forEach(cat => {
     $("#searchResult").append(
-    "<div class='search-result-item'>" +
+    "<div class='search-result-item' id="+ cat.id + ">" +
       "<span class='search-result-path'>" + cat.fullname +"</span><span id="+ cat.id + " class='icon-plus-circled item-add'></span>" +
     "</div>"
     );
@@ -97,8 +99,11 @@ function fill_results(cats) {
       $(".search-result-item #"+ cat.id +".item-add").addClass("notClickable").attr("title", str_already_in_related_cats).on("click", function (event) {
         event.preventDefault();
       });
+      $(".search-result-item").addClass("notClickable").attr("title", str_already_in_related_cats).on("click", function (event) {
+        event.preventDefault();
+      });
     } else {
-      $(".search-result-item #"+ cat.id +".item-add").on("click", function () {
+      $(".search-result-item#"+ cat.id).on("click", function () {
         add_related_category(cat.id, cat.full_name_with_admin_links);
       });
     }

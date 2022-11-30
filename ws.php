@@ -264,6 +264,18 @@ function ws_addDefaultMethods( $arr )
       $ws_functions_root . 'pwg.images.php',
       array('admin_only'=>true, 'post_only'=>true)
     );
+  
+  $service->addMethod(
+      'pwg.images.formats.delete',
+      'ws_images_formats_delete',
+      array(
+        'format_id' => array('type'=>WS_TYPE_ID, 'default'=>null, 'flags'=>WS_PARAM_ACCEPT_ARRAY),
+        'pwg_token' =>  array(),
+        ),
+      'Remove a format',
+      $ws_functions_root . 'pwg.images.php',
+      array('admin_only'=>true, 'post_only'=>true)
+    );
 
   $service->addMethod(
       'pwg.images.setRank',
@@ -599,7 +611,7 @@ function ws_addDefaultMethods( $arr )
                                 'info'=>'public, private'),
         'commentable' =>  array('default'=>true,
                                 'type'=>WS_TYPE_BOOL),
-        'position' =>     array('default'=>null),
+        'position' =>     array('default'=>null, 'info'=>'first, last'),
         ),
       'Adds an album.',
       $ws_functions_root . 'pwg.categories.php',
@@ -1282,10 +1294,62 @@ enabled_high, registration_date, registration_date_string, registration_date_sin
     );
 
   $service->addMethod(
+    'pwg.history.log',
+    'ws_history_log',
+    array(
+      'image_id' => array('type'=>WS_TYPE_ID),
+      'cat_id' => array('type'=>WS_TYPE_ID, 'default'=>null),
+      'section' => array('default'=>null),
+      'tags_string' => array('default'=>null),
+      ),
+    'Log visit in history',
+    $ws_functions_root . 'pwg.php'
+    );
+
+  $service->addMethod(
       'pwg.history.search',
       'ws_history_search',
-      null,
-      'Gives an history of who has visited the galery and the actions done in it. Receives parameter.',
+      array(
+        'start' => array(
+          'default' => null
+        ),
+        'end' => array(
+          'default' => null
+        ),
+        'types' => array(
+          'flags'=>WS_PARAM_FORCE_ARRAY,
+          'default' => array(
+            'none',
+            'picture',
+            'high',
+            'other',
+          )
+        ),
+        'user_id' => array(
+          'default' => -1,
+        ),
+        'image_id' => array(
+          'default' => null,
+          'type' => WS_TYPE_ID,
+        ),
+        'filename' => array(
+          'default' => null
+        ),
+        'ip' => array(
+          'default' => null
+        ),
+        'display_thumbnail' => array(
+          'default' => 'display_thumbnail_classic'
+        ),
+        'pageNumber' => array(
+          'default' => null,
+          'type' => WS_TYPE_INT|WS_TYPE_POSITIVE,
+        ),
+      ),
+      'Gives an history of who has visited the galery and the actions done in it. Receives parameter.
+      <br> <strong>Types </strong> can be : \'none\', \'picture\', \'high\', \'other\' 
+      <br> <strong>Date format</strong> is yyyy-mm-dd
+      <br> <strong>display_thumbnail</strong> can be : \'no_display_thumbnail\', \'display_thumbnail_classic\', \'display_thumbnail_hoverbox\'',
       $ws_functions_root . 'pwg.php'
     );
 }

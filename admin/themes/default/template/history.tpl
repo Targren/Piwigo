@@ -11,6 +11,8 @@ var month = dateObj.getUTCMonth() + 1; //months from 1-12
 var day = dateObj.getUTCDate();
 var year = dateObj.getUTCFullYear();
 
+var filter_user_name = "{$USER_NAME}";
+
 if (month < 10) month = "0" + month;
 if (day < 10) day = "0" + day;
 
@@ -24,10 +26,10 @@ var current_param = {
     2: "high",
     3: "other"
   },
-  user: "-1",
-  image_id: "",
+  user_id: {$USER_ID},
+  image_id: {if isset($IMAGE_ID)}"{$IMAGE_ID}"{else}""{/if},
   filename: "",
-  ip: "",
+  ip: {if isset($IP)}"{$IP}"{else}""{/if},
   display_thumbnail: "display_thumbnail_classic",
   pageNumber: 0 {* fetch lines from line 0 to line 100*}
 }
@@ -41,8 +43,11 @@ const str_favorites = "{'Your favorites'|translate}";
 const str_recent_cats = "{'Recent albums'|translate}";
 const str_recent_pics = "{'Recent photos'|translate}";
 const str_memories = "{'Memories'|translate}";
+const str_no_longer_exist_photo = "{'This photo no longer exists'|@translate}";
+const str_tags = "{'Tags'|translate}";
 const unit_MB = "{"%s MB"|@translate}";
 const str_guest = '{'guest'|@translate}';
+const str_contact_form = '{'Contact Form'|@translate}';
 const guest_id = {$guest_id};
 {/footer_script}
 
@@ -51,8 +56,6 @@ const guest_id = {$guest_id};
 
 {combine_script id='jquery.confirm' load='footer' require='jquery' path='themes/default/js/plugins/jquery-confirm.min.js'}
 {combine_css path="admin/themes/default/fontello/css/animation.css" order=10} {* order 10 is required, see issue 1080 *}
-
-<h2>{'History'|@translate} {$TABSHEET_TITLE}</h2>
 
 <form class="filter" method="post" name="filter" action="">
 <fieldset class="history-filter">
@@ -278,6 +281,10 @@ jQuery(document).ready( function() {
 
 <style>
 
+.notClickable {
+  opacity: 0.5;
+}
+
 .container {
   padding: 0 20px;
 }
@@ -477,6 +484,9 @@ jQuery(document).ready( function() {
   cursor: default;
 
   white-space: nowrap;
+}
+.detail-item::before {
+  margin: 0 5px 0 0px;
 }
 
 .add-filter {

@@ -45,18 +45,18 @@ jQuery("a.preview-box").colorbox({
 	photo: true
 });
 
-str_are_you_sure = '{'Are you sure?'|translate}';
-str_yes = '{'Yes, delete'|translate}';
+str_are_you_sure = '{'Are you sure?'|translate|escape:javascript}';
+str_yes = '{'Yes, delete'|translate|escape:javascript}';
 str_no = '{'No, I have changed my mind'|translate|@escape:'javascript'}';
 url_delete = '{$U_DELETE}';
-str_albums_found = '{"<b>%d</b> albums found"|translate}';
-str_album_found = '{"<b>1</b> album found"|translate}';
+str_albums_found = '{"<b>%d</b> albums found"|translate|escape:javascript}';
+str_album_found = '{"<b>1</b> album found"|translate|escape:javascript}';
 str_result_limit = '{"<b>%d+</b> albums found, try to refine the search"|translate|escape:javascript}';
-str_orphan = '{'This photo is an orphan'|@translate}';
-str_no_search_in_progress = '{'No search in progress'|@translate}';
+str_orphan = '{'This photo is an orphan'|@translate|escape:javascript}';
+str_no_search_in_progress = '{'No search in progress'|@translate|escape:javascript}';
 
 related_categories_ids = {$related_categories_ids|@json_encode};
-str_already_in_related_cats = '{'This albums is already in related categories list'|translate}';
+str_already_in_related_cats = '{'This albums is already in related categories list'|translate|escape:javascript}';
 
 {literal}
 $('#action-delete-picture').on('click', function() {
@@ -96,7 +96,11 @@ $('#action-delete-picture').on('click', function() {
 {combine_css path="admin/themes/default/fontello/css/animation.css" order=10} {* order 10 is required, see issue 1080 *}
 
 <form action="{$F_ACTION}" method="post" id="pictureModify">
+{if $INTRO.is_svg}
+  <div id='picture-preview' class="svg-container">
+{else}
   <div id='picture-preview'>
+{/if}
     <div class='picture-preview-actions'>
       {if isset($U_JUMPTO)}
         <a class="icon-eye" href="{$U_JUMPTO}" title="{'Open in gallery'|@translate}"></a>
@@ -104,13 +108,18 @@ $('#action-delete-picture').on('click', function() {
         <a class="icon-eye unavailable" title="{'You don\'t have access to this photo'|translate}"></a>
       {/if}
       <a class="icon-download" href="{$U_DOWNLOAD}" title="{'Download'|translate}"></a>
+      <a class="icon-signal" href="{$U_HISTORY}" title="{'Visit history'|translate}"></a>
       {if !url_is_remote($PATH)}
       <a class="icon-arrows-cw" href="{$U_SYNC}" title="{'Synchronize metadata'|@translate}"></a>
       <a class="icon-trash" title="{'delete photo'|@translate}" id='action-delete-picture'></a>
       {/if}
     </div>
-    <a href="{$FILE_SRC}" class="preview-box icon-zoom-in" title="{$TITLE|htmlspecialchars}" style="{if $FORMAT}width{else}height{/if}:35vw">
-      <img src="{$TN_SRC}" alt="{'Thumbnail'|translate}" style="{if $FORMAT}width{else}height{/if}:100%">
+    <a href="{$FILE_SRC}" class="preview-box icon-zoom-in" title="{$TITLE|htmlspecialchars}" >
+      {if $INTRO.is_svg}
+      <img src="{$PATH}" alt="{'Thumbnail'|translate}" class="svg-image" style="{if $FORMAT}width:100%; max-height:100%;{else}max-width:100%; height:100%;{/if}">
+      {else}
+      <img src="{$TN_SRC}" alt="{'Thumbnail'|translate}" class="other-image-format" style="{if $FORMAT}width:100%; max-height:100%;{else}max-width:100%; height:100%;{/if}">
+      {/if}
     </a>
   </div>
   <div id='picture-content'>
@@ -179,7 +188,7 @@ $('#action-delete-picture').on('click', function() {
       </select>
       <div class="related-categories-container">
       {foreach from=$related_categories item=$cat_path key=$key}
-        <div class="breadcrumb-item"><span class="link-path">{$cat_path}</span><span id={$key} class="icon-cancel-circled remove-item"></span></div>
+      <div class="breadcrumb-item"><span class="link-path">{$cat_path['name']}</span>{if $cat_path['unlinkable']}<span id={$key} class="icon-cancel-circled remove-item"></span>{else}<span id={$key} class="icon-help-circled help-item tiptip" title="{'This picture is physically linked to this album, you can\'t dissociate them'|translate}"></span>{/if}</div>
       {/foreach}
       </div>
       <div class="breadcrumb-item linked-albums add-item {if $related_categories|@count < 1 } highlight {/if}"><span class="icon-plus-circled"></span>{'Add'|translate}</div>

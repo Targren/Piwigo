@@ -22,18 +22,21 @@ const title_msg = '{'Are you sure you want to delete the user "%s"?'|@translate|
 const are_you_sure_msg  = '{'Are you sure?'|@translate|@escape:'javascript'}';
 const confirm_msg = '{'Yes, I am sure'|@translate|@escape}';
 const cancel_msg = '{'No, I have changed my mind'|@translate|@escape}';
-const str_and_others_tags = '{'and %s others'|@translate}';
+const str_and_others_tags = '{'and %s others'|@translate|escape:javascript}';
 const missingConfirm = "{'You need to confirm deletion'|translate|escape:javascript}";
 const missingUsername = "{'Please, enter a login'|translate|escape:javascript}";
 const fieldNotEmpty = "{'Name field must not be empty'|@translate|escape:javascript}"
 
-const registered_str = '{"Registered"|@translate}';
-const last_visit_str = '{"Last visit"|@translate}';
-const dates_infos = '{'between %s and %s'|translate}'
-const hide_str = '{'Hide'|@translate}';
-const show_str = '{'Show'|@translate}';
-const user_added_str = '{'User %s added'|@translate}';
-const str_popin_update_btn = '{'Update'|@translate}';
+const registered_str = '{"Registered"|@translate|escape:javascript}';
+const last_visit_str = '{"Last visit"|@translate|escape:javascript}';
+const dates_infos = '{'between %s and %s'|translate|escape:javascript}'
+const hide_str = '{'Hide'|@translate|escape:javascript}';
+const show_str = '{'Show'|@translate|escape:javascript}';
+const user_added_str = '{'User %s added'|@translate|escape:javascript}';
+const str_popin_update_btn = '{'Update'|@translate|escape:javascript}';
+const history_base_url = "{$U_HISTORY}";
+
+const view_selector = '{$view_selector}';
 
 months = [
   "{'Jan'|@translate}",
@@ -83,6 +86,93 @@ $(".icon-help-circled").tipTip({
   'fadeIn': '1000',
 });
 
+$(document).ready(function() {
+  // We set the applyAction btn click event here so plugins can add cases to the list 
+  // which is not possible if this JS part is in a JS file
+  // see #1571 on Github
+  jQuery("#applyAction").click(function() {
+      let action = jQuery("select[name=selectAction]").prop("value");
+      let method = 'pwg.users.setInfo';
+      let data = {
+          pwg_token: pwg_token,
+          user_id: selection.map(x => x.id)
+      };
+      switch (action) {
+          case 'delete':
+              if (!($("#permitActionUserList .user-list-checkbox[name=confirm_deletion]").attr("data-selected") === "1")) {
+                  alert(missingConfirm);
+                  return false;
+              }
+              method = 'pwg.users.delete';
+              break;
+          case 'group_associate':
+              method = 'pwg.groups.addUser';
+              data.group_id = jQuery("#permitActionUserList select[name=associate]").prop("value");
+              break;
+          case 'group_dissociate':
+              method = 'pwg.groups.deleteUser';
+              data.group_id = jQuery("#permitActionUserList select[name=dissociate]").prop("value");
+              break;
+          case 'status':
+              data.status = jQuery("#permitActionUserList select[name=status]").prop("value");
+              break;
+          case 'enabled_high':
+              data.enabled_high = $("#permitActionUserList .user-list-checkbox[name=enabled_high_yes]").attr("data-selected") === "1" ? true : false;
+              break;
+          case 'level':
+              data.level = jQuery("#permitActionUserList select[name=level]").val();
+              break;
+          case 'nb_image_page':
+              data.nb_image_page = jQuery("#permitActionUserList input[name=nb_image_page]").val();
+              break;
+          case 'theme':
+              data.theme = jQuery("#permitActionUserList select[name=theme]").val();
+              break;
+          case 'language':
+              data.language = jQuery("#permitActionUserList select[name=language]").val();
+              break;
+          case 'recent_period':
+              data.recent_period = recent_period_values[$('#permitActionUserList .period-select-bar .slider-bar-container').slider("option", "value")];;
+              break;
+          case 'expand':
+              data.expand = $("#permitActionUserList .user-list-checkbox[name=expand_yes]").attr("data-selected") === "1" ? true : false;
+              break;
+          case 'show_nb_comments':
+              data.show_nb_comments = $("#permitActionUserList .user-list-checkbox[name=show_nb_comments_yes]").attr("data-selected") === "1" ? true : false
+              break;
+          case 'show_nb_hits':
+              data.show_nb_hits = $("#permitActionUserList .user-list-checkbox[name=show_nb_hits_yes]").attr("data-selected") === "1" ? true : false;
+              break;
+          default:
+              alert("Unexpected action");
+              return false;
+      }
+      jQuery.ajax({
+          url: "ws.php?format=json&method="+method,
+          type:"POST",
+          data: data,
+          beforeSend: function() {
+              jQuery("#applyActionLoading").show();
+              jQuery("#applyActionBlock .infos").fadeOut();
+          },
+          success:function(data) {
+              jQuery("#applyActionLoading").hide();
+              jQuery("#applyActionBlock .infos").fadeIn();
+              jQuery("#applyActionBlock .infos").css("display", "inline-block");
+              update_user_list();
+              if (action == 'delete') {
+                  selection = [];
+                  update_selection_content();
+              }
+          },
+          error:function(XMLHttpRequest, textStatus, errorThrows) {
+              jQuery("#applyActionLoading").hide();
+          }
+      });
+      return false;
+  });
+});
+
 {/footer_script}
 
 {combine_script id='user_list' load='footer' path='admin/themes/default/js/user_list.js'}
@@ -103,19 +193,19 @@ $(".icon-help-circled").tipTip({
     <div class="user-manager-header">
 
       <div class="UserViewSelector">
-        <input type="radio" name="layout" class="switchLayout" id="displayCompact" {if $smarty.cookies.pwg_user_manager_view == 'compact'}checked{/if}/><label for="displayCompact"><span class="icon-th-large firstIcon tiptip" title="{'Compact View'|translate}"></span></label><input type="radio" name="layout" class="switchLayout tiptip" id="displayLine" {if $smarty.cookies.pwg_user_manager_view == 'line' || !$smarty.cookies.pwg_user_manager_view}checked{/if}/><label for="displayLine"><span class="icon-th-list tiptip" title="{'Line View'|translate}"></span></label><input type="radio" name="layout" class="switchLayout" id="displayTile" {if $smarty.cookies.pwg_user_manager_view == 'tile'}checked{/if}/><label for="displayTile"><span class="icon-pause lastIcon tiptip" title="{'Tile View'|translate}"></span></label>
+        <input type="radio" name="layout" class="switchLayout" id="displayCompact" {if $view_selector == 'compact'}checked{/if}/><label for="displayCompact"><span class="icon-th-large firstIcon tiptip" title="{'Compact View'|translate}"></span></label><input type="radio" name="layout" class="switchLayout tiptip" id="displayLine" {if $view_selector == 'line'}checked{/if}/><label for="displayLine"><span class="icon-th-list tiptip" title="{'Line View'|translate}"></span></label><input type="radio" name="layout" class="switchLayout" id="displayTile" {if $view_selector == 'tile'}checked{/if}/><label for="displayTile"><span class="icon-pause lastIcon tiptip" title="{'Tile View'|translate}"></span></label>
       </div>
 
       <div style="display:flex;justify-content:space-between; flex-grow:1;">
         <div style="display:flex; align-items: center;">
-          <div class="not-in-selection-mode user-header-button add-user-button" style="margin: auto; margin-right: 10px">
-            <label class="user-header-button-label icon-plus-circled">
+          <div class="not-in-selection-mode user-header-button add-user-button" style="margin: auto;">
+            <label class="head-button-2 icon-plus-circled">
               <p>{'Add a user'|@translate}</p>
             </label>
           </div>
 
-          <div class="not-in-selection-mode user-header-button" style="margin: auto; margin-right: 10px">
-            <label class="user-header-button-label icon-user-secret edit-guest-user-button">
+          <div class="not-in-selection-mode user-header-button" style="margin: auto;">
+            <label class="head-button-2 icon-user-secret edit-guest-user-button">
               <p>{'Edit guest user'|@translate}</p>
             </label>
           </div>
@@ -548,6 +638,11 @@ $(".icon-help-circled").tipTip({
             <div class="user-property-permissions">
               <p class="user-property-button"> <span class="icon-lock user-edit-icon"> </span><a href="#" >{'Permissions'|@translate}</a></p>
             </div>
+            <div class="user-stats">
+              <div class="user-property-history">
+                <p class="user-property-button"> <span class="icon-signal user-edit-icon"> </span><a href="" >{'Visit history'|@translate}</a></p>
+              </div>
+            </div>
           </div>
           <div class="user-property-register-visit">
             <span class="user-property-register"><!-- Registered date XX/XX/XXXX --></span>
@@ -979,19 +1074,6 @@ $(".icon-help-circled").tipTip({
 .user-header-button {
   position:relative;
 }
-.user-header-button-label {
-	position: relative;
-	padding: 10px;
-	box-shadow: 0px 2px #00000024;
-	border-radius: 5px;
-	font-weight: bold;
-	display: flex;
-	align-items: baseline;
-	cursor: pointer;
-}
-.user-header-button-label p {
-  margin:0;
-}
 
 /* filters bar */
 
@@ -1111,6 +1193,11 @@ $(".icon-help-circled").tipTip({
 .user-container-email {
     width:20%;
     max-width: 220px;
+    margin-right: 20px;
+}
+.user-container-email span {
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .user-header-groups,
@@ -2074,6 +2161,7 @@ Advanced filter
   margin: 10px auto;
   justify-content: center;
   max-height: 40px;
+  width: 190px;
 }
 
 .tileView .user-container-groups {

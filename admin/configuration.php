@@ -327,6 +327,8 @@ switch ($page['section'])
 
     function order_by_is_local()
     {
+      $conf = array();
+      include(PHPWG_ROOT_PATH . 'include/config_default.inc.php');
       @include(PHPWG_ROOT_PATH. 'local/config/config.inc.php');
       if (isset($conf['local_dir_site']))
       {
@@ -350,7 +352,7 @@ switch ($page['section'])
     {
       $out = array();
       $order_by = trim($conf['order_by_inside_category']);
-      $order_by = str_replace('ORDER BY ', null, $order_by);
+      $order_by = str_replace('ORDER BY ', false, $order_by);
       $order_by = explode(', ', $order_by);
     }
 
@@ -523,13 +525,13 @@ switch ($page['section'])
       $template->assign('derivatives', $tpl_vars);
       $template->assign('resize_quality', ImageStdParams::$quality);
 
-      // $tpl_vars = array();
-      // $now = time();
-      // foreach(ImageStdParams::$custom as $custom=>$time)
-      // {
-      //   $tpl_vars[$custom] = ($now-$time<=24*3600) ? l10n('today') : time_since($time, 'day');
-      // }
-      // $template->assign('custom_derivatives', $tpl_vars);
+      $tpl_vars = array();
+      $now = time();
+      foreach(ImageStdParams::$custom as $custom=>$time)
+      {
+        $tpl_vars[$custom] = ($now-$time<=24*3600) ? l10n('today') : time_since($time, 'day');
+      }
+      $template->assign('custom_derivatives', $tpl_vars);
     }
 
     break;
@@ -608,6 +610,7 @@ switch ($page['section'])
 }
 
 $template->assign('isWebmaster', (is_webmaster()) ? 1 : 0);
+$template->assign('ADMIN_PAGE_TITLE', l10n('Configuration'));
 
 //----------------------------------------------------------- sending html code
 $template->assign_var_from_handle('ADMIN_CONTENT', 'config');

@@ -102,6 +102,7 @@ SELECT
 
 $template->assign(
   array(
+    'U_HISTORY' => get_root_url().'admin.php?page=history&filter_user_id=',
     'PWG_TOKEN' => get_pwg_token(),
     'NB_IMAGE_PAGE' => $default_user['nb_image_page'],
     'RECENT_PERIOD' => $default_user['recent_period'],
@@ -171,6 +172,7 @@ $template->assign('groups_arr_id', implode(',', $groups_arr_id));
 $template->assign('groups_arr_name', implode(',', $groups_arr_name));
 $template->assign('guest_id', $conf["guest_id"]);
 
+$template->assign('view_selector', userprefs_get_param('user-manager-view', 'line'));
 // +-----------------------------------------------------------------------+
 // | html code display                                                     |
 // +-----------------------------------------------------------------------+

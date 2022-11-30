@@ -24,8 +24,6 @@ const page_item = '<a data-page="%d">%d</a>';
 var create_selecter = true;
 const users_key = "{"Users"|@translate}";
 
-const ulist = {$ulist};
-
 const line_key = "{'%s line'|translate}";
 const lines_key = "{'%s lines'|translate}";
 
@@ -669,6 +667,8 @@ function append_pagination_item(page = null) {
 
 
 $(document).ready(function () {
+    $("h1").append(`<span class='badge-number'>`+{$nb_users - 1}+`</span>`);
+
     $('select').on('change', function (user) {
         if ($(".selectize-input").hasClass("full")) {
           {* call ajax sur activity list avec uid en param *}

@@ -445,7 +445,8 @@ SELECT
     session_idx,
     ip_address,
     occured_on,
-    details
+    details,
+    user_agent
   FROM '.ACTIVITY_TABLE.'
   WHERE performed_by = '.$param['uid'].'
   ORDER BY activity_id DESC LIMIT '.$page_size.' OFFSET '.$page_offset.';
@@ -463,7 +464,8 @@ SELECT
     session_idx,
     ip_address,
     occured_on,
-    details
+    details,
+    user_agent
   FROM '.ACTIVITY_TABLE.'
   ORDER BY activity_id DESC LIMIT '.$page_size.' OFFSET '.$page_offset.';
 ;';
@@ -475,7 +477,12 @@ SELECT
   {
     $row['details'] = str_replace('`groups`', 'groups', $row['details']);
     $row['details'] = str_replace('`rank`', 'rank', $row['details']);
-    $details = unserialize($row['details']);
+    $details = @unserialize($row['details']);
+
+    if (isset($row['user_agent']))
+    {
+      $details['agent'] = $row['user_agent'];
+    }
 
     if (isset($details['method']))
     {
@@ -580,6 +587,33 @@ SELECT
 
 /**
  * API method
+ * Log a new line in visit history
+ * @since 13
+ */
+function ws_history_log($params, &$service)
+{
+  global $logger, $page;
+
+  if (!empty($params['section']) and in_array($params['section'], get_enums(HISTORY_TABLE, 'section')))
+  {
+    $page['section'] = $params['section'];
+  }
+
+  if (!empty($params['cat_id']))
+  {
+    $page['category'] = array('id' => $params['cat_id']);
+  }
+
+  if (!empty($params['tags_string']) and preg_match('/^\d+(,\d+)*$/', $params['tags_string']))
+  {
+    $page['tag_ids'] = explode(',', $params['tags_string']);
+  }
+
+  pwg_log($params['image_id'], 'picture');
+}
+
+/**
+ * API method
  * Returns lines of an history search
  * @since 13
  */
@@ -640,7 +674,7 @@ function ws_history_search($param, &$service)
   }
 
   // user
-  $search['fields']['user'] = intval($param['user']);
+  $search['fields']['user'] = intval($param['user_id']);
 
   // image
   if (!empty($param['image_id']))
@@ -788,13 +822,21 @@ SELECT id, uppercats
 ;';
     $uppercats_of = query2array($query, 'id', 'uppercats');
 
+    $full_cat_path = array();
     $name_of_category = array();
 
     foreach ($uppercats_of as $category_id => $uppercats)
     {
+      $full_cat_path[$category_id] = get_cat_display_name_cache(
+        $uppercats,
+        'admin.php?page=album-'
+      );
+      
+      $uppercats = explode(",", $uppercats);
       $name_of_category[$category_id] = get_cat_display_name_cache(
-        $uppercats
-        );
+        end($uppercats),
+        'admin.php?page=album-'
+      );
     }
   }
 
@@ -860,7 +902,7 @@ SELECT
 
     $i++;
 
-    if ($i < $first_line or $i > $last_line)
+    if ($i <= $first_line and $i >= $last_line)
     {
       continue;
     }
@@ -930,6 +972,7 @@ SELECT
       }
       else
       {
+        $image_edit_string = '';
         $image_title.= ' unknown filename';
       }
 
@@ -958,6 +1001,7 @@ SELECT
         'EDIT_IMAGE' => $image_edit_string,
         'TYPE'       => $line['image_type'],
         'SECTION'    => $line['section'],
+        'FULL_CATEGORY_PATH'   => isset($full_cat_path[$line['category_id']]) ? strip_tags($full_cat_path[$line['category_id']]) : l10n('Root').$line['category_id'],
         'CATEGORY'   => isset($name_of_category[$line['category_id']]) ? $name_of_category[$line['category_id']] : l10n('Root').$line['category_id'],
         'TAGS'       => explode(",",$tag_names),
         'TAGIDS'     => explode(",",$tag_ids),

@@ -7,7 +7,10 @@ var piwigo_need_update_msg = '<a href="admin.php?page=updates">{'A new version o
 var ext_need_update_msg = '<a href="admin.php?page=updates&amp;tab=ext">{'Some upgrades are available for extensions.'|@translate|@escape:"javascript"} <i class="icon-right"></i></a>';
 const str_gb_used = "{'%s GB used'|translate}";
 const str_mb_used = "{'%s MB used'|translate}";
+const str_gb = "{'%sGB'|translate}".replace(' ', '&nbsp;');
+const str_mb = "{'%sMB'|translate}".replace(' ', '&nbsp;');
 const storage_total = {$STORAGE_TOTAL};
+const storage_details = {$STORAGE_DETAILS};
 {literal}
 jQuery().ready(function(){
 	jQuery('.cluetip').cluetip({
@@ -80,9 +83,14 @@ let str_size = "";
 {/literal}
 {foreach from=$STORAGE_CHART_DATA key=type item=value}
   size = {$value};
-  str_size_type = size > 1000000 ? "GB" : "MB";
+  str_size_type_string = size > 1000000 ? str_gb : str_mb;
   size_nb = size > 1000000 ? (size / 1000000).toFixed(2) : (size / 1000).toFixed(0);
-  str_size = " : " + size_nb.toString() + " " + str_size_type;
+  str_size = " : " + str_size_type_string.replace("%s", size_nb);
+
+  if (typeof storage_details.{$type} !== 'undefined') {
+    // str_size += " (" + storage_details.{$type} + ")";
+  }
+
   $("#storage-{$type}").html("<b></b>" + str_size);
   $("#storage-{$type} b").html("{$type|translate}");
 {/foreach}
@@ -127,7 +135,8 @@ let str_size = "";
 {if $NB_USERS > 2}
 <a class="stat-box" href="{$U_USERS}">
 <i class="icon-users icon-purple"></i>
-<span class="number">{$NB_USERS}</span><span class="caption">{'Users'|translate}</span>
+{* -1 because we don't count the "guest" user *}
+<span class="number">{$NB_USERS - 1}</span><span class="caption">{'Users'|translate}</span>
 </a>
 {/if}
 
@@ -170,13 +179,6 @@ let str_size = "";
 <i class="icon-hdd icon-blue"></i>
 <span class="number">{$STORAGE_USED}</span><span class="caption">{'Storage used'|translate}</span>
 </div>
-
-{if $NB_PHOTOS > 1}
-<div class="stat-box">
-<i class="icon-back-in-time icon-yellow"></i>
-<span class="number">{$first_added_age}</span><span class="caption" title="{'first photo added on %s'|translate:$first_added_date}">{'First photo added'|translate}</span>
-</div>
-{/if}
 
 </div> {* .stat-boxes *}
 

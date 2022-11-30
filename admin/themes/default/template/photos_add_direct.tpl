@@ -31,7 +31,7 @@
 
 const formatMode = {if $DISPLAY_FORMATS}true{else}false{/if};
 const haveFormatsOriginal = {if $HAVE_FORMATS_ORIGINAL}true{else}false{/if};
-const originalImageId = haveFormatsOriginal? '{$FORMATS_ORIGINAL_INFO['id']}' : -1;
+const originalImageId = haveFormatsOriginal? '{if isset($FORMATS_ORIGINAL_INFO['id'])} {$FORMATS_ORIGINAL_INFO['id']} {else} -1 {/if}' : -1;
 
 {* <!-- CATEGORIES --> *}
 if (!formatMode) {
@@ -81,7 +81,7 @@ var batch_Label = "{'Manage this set of %d photos'|translate}";
 var albumSummary_label = "{'Album "%s" now contains %d photos'|translate|escape}";
 var str_format_warning = "{'Error when trying to detect formats'|translate}";
 var str_ok = "{'Ok'|translate}";
-var str_format_warning_multiple = "{'There is multiple image in the database with the following names : %s. Try to rename them with the Edit Filename plugin.'|translate}";
+var str_format_warning_multiple = "{'There is multiple image in the database with the following names : %s.'|translate}";
 var str_format_warning_notFound = "{'No picture found with the following name : %s.'|translate}";
 var str_and_X_others = "{'and %d more'|translate}";
 var file_ext = "{$file_exts}";
@@ -91,6 +91,21 @@ var uploadCategory = null;
 
 {literal}
 jQuery(document).ready(function(){
+  jQuery(".dont-show-again").on("click", function() {
+    jQuery.ajax({
+      url: "ws.php?format=json&method=pwg.users.preferences.set",
+      type: "POST",
+      dataType: "JSON",
+      data: {
+        param: 'promote-mobile-apps',
+        value: false,
+      },
+      success: function(res) {
+        jQuery(".promote-apps").hide();
+      }
+    })
+  })
+
   jQuery("#uploadWarningsSummary a.showInfo").click(function() {
     jQuery("#uploadWarningsSummary").hide();
     jQuery("#uploadWarnings").show();
@@ -118,7 +133,7 @@ jQuery(document).ready(function(){
 		
 		filters : {
 			// Maximum file size
-			max_file_size : '1000mb',
+			max_file_size : '{/literal}{$max_file_size}{literal}mb',
 			// Specify what files to browse for
 			mime_types: [
 				{title : "Image files", extensions : formatMode ? format_ext : file_ext}
@@ -377,6 +392,49 @@ jQuery(document).ready(function(){
 
 <div id="photosAddContent">
 
+{if count($setup_errors) > 0}
+  <div class="errors">
+    <ul>
+    {foreach from=$setup_errors item=error}
+      <li>{$error}</li>
+    {/foreach}
+    </ul>
+  </div>
+  {else}
+    {if count($setup_warnings) > 0}
+  <div class="warnings">
+    <ul>
+      {foreach from=$setup_warnings item=warning}
+      <li>{$warning}</li>
+      {/foreach}
+    </ul>
+    <div class="hideButton" style="text-align:center"><a href="{$hide_warnings_link}">{'Hide'|@translate}</a></div>
+  </div>
+    {/if}
+  {/if} {* $setup_errors *}
+  
+  {if $PROMOTE_MOBILE_APPS}
+    <div class="promote-apps">
+      <div class="promote-content">
+        <div class="left-side">
+        <img src="https://de.piwigo.org/./plugins/piwigo-piwigodotorg/images/mobile_applications/Group_77.png">
+          <div class="promote-text">
+            <span>{"Piwigo is also on mobile."|@translate|escape:javascript}</span>
+            <span>{"Try now !"|@translate|escape:javascript}</span>
+          </div>
+        </div>
+        <div class="mid-side"></div>
+        <div class="right-side">
+          <div class="promote-text">
+            <span>{"Install Piwigo on mobile"|@translate|escape:javascript}</span>
+            <a href="{$PHPWG_URL}/mobile-applications" target="_blank"><span class="go-to-porg icon-link-1">{"Discover"|@translate|escape:javascript}</span></a>
+          </div>
+        </div>
+      </div>
+      <span class="dont-show-again">{'Understood, do not show again'|translate|escape:javascript}</span>
+    </div>
+  {/if}
+
   {if $ENABLE_FORMATS}
     <div class="format-mode-group-manager">
     <label class="switch" onClick="window.location.replace('{$SWITCH_MODE_URL}'); $('.switch .slider').addClass('loading');">
@@ -388,8 +446,8 @@ jQuery(document).ready(function(){
   {/if}
 
   {if !$DISPLAY_FORMATS}
-  <div class="addAlbumEmptyCenter">
-    <div class="addAlbumEmpty"{if $NB_ALBUMS > 0} style="display:none;"{/if}>
+  <div class="addAlbumEmptyCenter"{if $NB_ALBUMS > 0} style="display:none;"{/if}>
+    <div class="addAlbumEmpty">
       <div class="addAlbumEmptyTitle">{'Welcome!'|translate}</div>
       <p class="addAlbumEmptyInfos">{'Piwigo requires an album to add photos.'|translate}</p>
       <a href="#" data-add-album="category" class="buttonLike">{'Create a first album'|translate}</a>
@@ -407,27 +465,6 @@ jQuery(document).ready(function(){
     <a href="admin.php?page=photos_add&formats" class="icon-plus-circled">{'Add another set of formats'|@translate}</a>
   {/if}
 </p>
-
-{if count($setup_errors) > 0}
-<div class="errors">
-  <ul>
-  {foreach from=$setup_errors item=error}
-    <li>{$error}</li>
-  {/foreach}
-  </ul>
-</div>
-{else}
-  {if count($setup_warnings) > 0}
-<div class="warnings">
-  <ul>
-    {foreach from=$setup_warnings item=warning}
-    <li>{$warning}</li>
-    {/foreach}
-  </ul>
-  <div class="hideButton" style="text-align:center"><a href="{$hide_warnings_link}">{'Hide'|@translate}</a></div>
-</div>
-  {/if}
-
 
   <form id="uploadForm" class="{if $DISPLAY_FORMATS}format-mode{/if}" enctype="multipart/form-data" method="post" action="{$form_action}"{if $NB_ALBUMS == 0} style="display:none;"{/if}>
     {if not $DISPLAY_FORMATS}
@@ -472,7 +509,7 @@ jQuery(document).ready(function(){
     <fieldset class="selectFiles">
       <legend><span class="icon-file-image icon-yellow"></span>{'Select files'|@translate}</legend>
       <div class="selectFilesButtonBlock">
-        <button id="addFiles" class="buttonGradient">{if not $DISPLAY_FORMATS}{'Add Photos'|translate}{else}{'Add Formats'|translate}{/if}<i class="icon-plus-circled"></i></button>
+        <button id="addFiles" class="buttonGradient">{if not $DISPLAY_FORMATS}{'Add Photos'|translate}{else}{'Add formats'|@translate}{/if}<i class="icon-plus-circled"></i></button>
         <div class="selectFilesinfo">
           {if isset($original_resize_maxheight)}
           <p class="uploadInfo">{'The picture dimensions will be reduced to %dx%d pixels.'|@translate:$original_resize_maxwidth:$original_resize_maxheight}</p>
@@ -512,7 +549,5 @@ jQuery(document).ready(function(){
   <fieldset style="display:none" class="Addedphotos">
     <div id="uploadedPhotos"></div>
   </fieldset>
-
-{/if} {* $setup_errors *}
 
 </div> <!-- photosAddContent -->

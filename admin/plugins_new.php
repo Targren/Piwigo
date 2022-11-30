@@ -45,7 +45,8 @@ if (isset($_GET['installstatus']))
       $activate_url = get_root_url().'admin.php?page=plugins'
         . '&amp;plugin=' . $_GET['plugin_id']
         . '&amp;pwg_token=' . get_pwg_token()
-        . '&amp;action=activate';
+        . '&amp;action=activate'
+        . '&amp;filter=deactivated';
 
       $page['infos'][] = l10n('Plugin has been successfully copied');
       $page['infos'][] = '<a href="'. $activate_url . '">' . l10n('Activate it now') . '</a>';
@@ -160,7 +161,7 @@ if ($plugins->get_server_plugins(true, $beta_test))
       'BIG_DESC' => $ext_desc,
       'VERSION' => $plugin['revision_name'],
       'REVISION_DATE' => preg_replace('/[^0-9]/', '', strtotime($plugin['revision_date'])),
-      'REVISION_FORMATED_DATE' => format_date($plugin['revision_date'], array('day','month','year')),
+      'REVISION_FORMATED_DATE' => format_date($plugin['revision_date'], array('day','month','year')).", ".time_since($plugin['revision_date'], "day"),
       'AUTHOR' => $plugin['author_name'],
       'DOWNLOADS' => $plugin['extension_nb_downloads'],
       'URL_INSTALL' => $url_auto_install,
@@ -170,8 +171,6 @@ if ($plugins->get_server_plugins(true, $beta_test))
       'SCREENSHOT' => (key_exists('screenshot_url', $plugin)) ? $plugin['screenshot_url']:'',
       'TAGS' => $plugin["tags"],
     ));
-
-    $template->assign('BETA_TEST', $beta_test);
   }
 
   
@@ -185,6 +184,7 @@ if (!$beta_test and preg_match('/(beta|RC)/', PHPWG_VERSION))
 {
   $template->assign('BETA_URL', $base_url.'&amp;beta-test=true');
 }
-
+$template->assign('ADMIN_PAGE_TITLE', l10n('Plugins'));
+$template->assign('BETA_TEST', $beta_test);
 $template->assign_var_from_handle('ADMIN_CONTENT', 'plugins');
 ?>

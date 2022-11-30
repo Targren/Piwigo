@@ -148,88 +148,6 @@ $( document ).ready(function() {
             jQuery("#applyActionBlock").hide();
         }
     });
-    jQuery("#applyAction").click(function() {
-        let action = jQuery("select[name=selectAction]").prop("value");
-        let method = 'pwg.users.setInfo';
-        let data = {
-            pwg_token: pwg_token,
-            user_id: selection.map(x => x.id)
-        };
-        switch (action) {
-            case 'delete':
-                if (!($("#permitActionUserList .user-list-checkbox[name=confirm_deletion]").attr("data-selected") === "1")) {
-                    alert(missingConfirm);
-                    return false;
-                }
-                method = 'pwg.users.delete';
-                break;
-            case 'group_associate':
-                method = 'pwg.groups.addUser';
-                data.group_id = jQuery("#permitActionUserList select[name=associate]").prop("value");
-                break;
-            case 'group_dissociate':
-                method = 'pwg.groups.deleteUser';
-                data.group_id = jQuery("#permitActionUserList select[name=dissociate]").prop("value");
-                break;
-            case 'status':
-                data.status = jQuery("#permitActionUserList select[name=status]").prop("value");
-                break;
-            case 'enabled_high':
-                data.enabled_high = $("#permitActionUserList .user-list-checkbox[name=enabled_high_yes]").attr("data-selected") === "1" ? true : false;
-                break;
-            case 'level':
-                data.level = jQuery("#permitActionUserList select[name=level]").val();
-                break;
-            case 'nb_image_page':
-                data.nb_image_page = jQuery("#permitActionUserList input[name=nb_image_page]").val();
-                break;
-            case 'theme':
-                data.theme = jQuery("#permitActionUserList select[name=theme]").val();
-                break;
-            case 'language':
-                data.language = jQuery("#permitActionUserList select[name=language]").val();
-                break;
-            case 'recent_period':
-                data.recent_period = recent_period_values[$('#permitActionUserList .period-select-bar .slider-bar-container').slider("option", "value")];;
-                break;
-            case 'expand':
-                data.expand = $("#permitActionUserList .user-list-checkbox[name=expand_yes]").attr("data-selected") === "1" ? true : false;
-                break;
-            case 'show_nb_comments':
-                data.show_nb_comments = $("#permitActionUserList .user-list-checkbox[name=show_nb_comments_yes]").attr("data-selected") === "1" ? true : false
-                break;
-            case 'show_nb_hits':
-                data.show_nb_hits = $("#permitActionUserList .user-list-checkbox[name=show_nb_hits_yes]").attr("data-selected") === "1" ? true : false;
-                break;
-            default:
-                alert("Unexpected action");
-                return false;
-        }
-        jQuery.ajax({
-            url: "ws.php?format=json&method="+method,
-            type:"POST",
-            data: data,
-            beforeSend: function() {
-                jQuery("#applyActionLoading").show();
-                jQuery("#applyActionBlock .infos").fadeOut();
-            },
-            success:function(data) {
-                jQuery("#applyActionLoading").hide();
-                jQuery("#applyActionBlock .infos").fadeIn();
-                jQuery("#applyActionBlock .infos").css("display", "inline-block");
-                update_user_list();
-                if (action == 'delete') {
-                    selection = [];
-                    update_selection_content();
-                }
-            },
-            error:function(XMLHttpRequest, textStatus, errorThrows) {
-                jQuery("#applyActionLoading").hide();
-            }
-        });
-        return false;
-    });
-
     $(".yes_no_radio .user-list-checkbox").unbind("click").click(function () {
         if ($(this).attr("data-selected") !== "1") {
             $(this).attr("data-selected", "1");
@@ -293,10 +211,6 @@ $( document ).ready(function() {
 
     /*View manager*/
 
-    if (!$.cookie("pwg_user_manager_view")) {
-        $.cookie("pwg_user_manager_view", "line");
-    }
-
     if ($("#displayCompact").is(":checked")) {
         setDisplayCompact();
     };
@@ -315,9 +229,7 @@ $( document ).ready(function() {
         if ($(".addAlbum").hasClass("input-mode")) {
             $(".addAlbum p").hide();
         }
-        
-        $.cookie("pwg_user_manager_view", "compact");
-
+        set_view_selector('compact');
     });
 
     $("#displayLine").change(function () {
@@ -326,8 +238,7 @@ $( document ).ready(function() {
         if ($(".addAlbum").hasClass("input-mode")) {
             $(".addAlbum p").hide();
         }
-
-        $.cookie("pwg_user_manager_view", "line");
+        set_view_selector('line');
     });
 
     $("#displayTile").change(function () {
@@ -336,13 +247,12 @@ $( document ).ready(function() {
         if ($(".addAlbum").hasClass("input-mode")) {
             $(".addAlbum p").show();
         }
-        
-        $.cookie("pwg_user_manager_view", "tile");
+        set_view_selector('tile');
     });
 
     /* Pagination */
 
-    if ($.cookie("pwg_user_manager_view") === "compact") {
+    if (view_selector === "compact") {
         if (per_page < 10) {
             per_page = 10
             update_pagination_menu();
@@ -366,6 +276,18 @@ $( document ).ready(function() {
       update_user_list();
     }
 });
+
+function set_view_selector(view_type) {
+  $.ajax({
+    url: "ws.php?format=json&method=pwg.users.preferences.set",
+    type: "POST",
+    dataType: "JSON",
+    data: {
+      param: 'user-manager-view',
+      value: view_type,
+    }
+  })
+}
 
 function setDisplayTile() {
     $(".user-container-wrapper").removeClass("compactView").removeClass("lineView").addClass("tileView");
@@ -868,11 +790,11 @@ function selectionMode(isSelection) {
         $(".in-selection-mode").show();
         $(".not-in-selection-mode").hide();
 
-        if ($.cookie("pwg_user_manager_view") === "tile") {
+        if (view_selector === "tile") {
             $(".user-container-email").show();
         }
 
-        if ($.cookie("pwg_user_manager_view") !== "tile" || $.cookie("pwg_user_manager_view") === "line") {
+        if (view_selector === "compact") {
             $(".user-container-email").css({
                 display: "none"
             })
@@ -884,7 +806,7 @@ function selectionMode(isSelection) {
         $(".in-selection-mode").hide();
         $(".not-in-selection-mode").show();
 
-        if ($.cookie("pwg_user_manager_view") === "tile" || $.cookie("pwg_user_manager_view") === "line") {
+        if (view_selector === "tile" || view_selector === "line") {
             $(".user-container-email").css({
                 display: "flex"
             })
@@ -1080,6 +1002,7 @@ function fill_user_edit_summary(user_to_edit, pop_in, isGuest) {
     pop_in.find('.user-property-register').tipTip({content:`${registered_str}<br />${user_to_edit.registration_date_since}`});
     pop_in.find('.user-property-last-visit').html(get_formatted_date(user_to_edit.last_visit));
     pop_in.find('.user-property-last-visit').tipTip({content: `${last_visit_str}<br />${user_to_edit.last_visit_since}`});
+    pop_in.find('.user-property-history a').attr('href', history_base_url + user_to_edit.id);
 }
 
 function fill_user_edit_properties(user_to_edit, pop_in) {

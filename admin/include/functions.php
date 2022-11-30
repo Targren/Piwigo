@@ -2374,7 +2374,7 @@ function cat_admin_access($category_id)
 
   // $filter['visible_categories'] and $filter['visible_images']
   // are not used because it's not necessary (filter <> restriction)
-  if (in_array($category_id, explode(',', $user['forbidden_categories'])))
+  if (in_array($category_id, @explode(',', $user['forbidden_categories'])))
   {
     return false;
   }
@@ -2951,7 +2951,7 @@ function clear_derivative_cache($types='all')
     $type = $types[$i];
     if ($type == IMG_CUSTOM)
     {
-      $type = derivative_to_url($type).'[a-zA-Z0-9]+';
+      $type = derivative_to_url($type).'_[a-zA-Z0-9]+';
     }
     elseif (in_array($type, ImageStdParams::get_all_types()))
     {
@@ -3359,6 +3359,7 @@ function number_format_human_readable($numbers)
 {
   $readable = array("",  "k", "M");
   $index = 0;
+  $numbers = empty($numbers) ? 0 : $numbers;
 
   while ($numbers >= 1000)
   {
@@ -3455,4 +3456,66 @@ function get_cache_size_derivatives($path)
     closedir($contents);
   }
   return $msizes;
+}
+
+/**
+ * Return news from piwigo.org.
+ *
+ * @since 13
+ * @param int $start
+ * @param int $count
+ */
+function get_piwigo_news($start, $count)
+{
+  global $lang_info, $conf;
+
+  $all_news = null;
+
+  $cache_path = PHPWG_ROOT_PATH.$conf['data_location'].'cache/piwigo_news-'.$lang_info['code'].'.cache.php';
+  if (!is_file($cache_path) or filemtime($cache_path) < strtotime('24 hours ago'))
+  {
+    $forum_url = PHPWG_URL.'/forum';
+    $url = $forum_url.'/news.php?format=json&limit='.$count;
+
+    if (fetchRemote($url, $content))
+    {
+      $all_news = array();
+
+      $topics = json_decode($content, true);
+
+      foreach ($topics as $idx => $topic)
+      {
+        $news = array(
+          'id' => $topic['topic_id'],
+          'subject' => $topic['subject'],
+          'posted_on' => $topic['posted_on'],
+          'posted' => format_date($topic['posted_on']),
+          'url' => $forum_url.'/viewtopic.php?id='.$topic['topic_id'],
+        );
+
+        $all_news[] = $news;
+      }
+
+      if (mkgetdir(dirname($cache_path)))
+      {
+        file_put_contents($cache_path, serialize($all_news));
+      }
+    }
+    else
+    {
+      return array();
+    }
+  }
+
+  if (is_null($all_news))
+  {
+    $all_news = unserialize(file_get_contents($cache_path));
+  }
+
+  $news_slice = array_slice($all_news, $start, $count);
+
+  return array(
+    'total_count' => count($all_news),
+    'topics' => $news_slice,
+  );
 }

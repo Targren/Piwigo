@@ -13,6 +13,7 @@ var str_no_change_parent = "{'No, don\'t move this album here'|@translate}";
 var str_root = "{'Root'|@translate}";
 var openCat = {$open_cat};
 var nb_albums = {$nb_albums};
+var light_album_manager = {$light_album_manager};
 
 var delay_autoOpen = {$delay_before_autoOpen}
 {/footer_script}
@@ -38,6 +39,9 @@ const str_add_photo = '{'Add Photos'|@translate|escape:javascript}';
 const str_visit_gallery = '{'Visit Gallery'|@translate|escape:javascript}';
 const str_sort_order = '{'Automatic sort order'|@translate|escape:javascript}';
 const str_delete_album = '{'Delete album'|@translate|escape:javascript}';
+const str_root_order = '{'Apply to root albums'|@translate|escape:javascript}';
+str_sub_album_order = '{'Apply to direct sub-albums'|@translate|escape:javascript}';
+str_album_name_empty = '{'Album name must not be empty'|@translate|escape:javascript}'
 
 const add_album_root_title = '{'Create a new album at root'|@translate|escape:javascript}';
 const add_sub_album_of = '{'Create a sub-album of "%s"'|@translate|escape:javascript}';
@@ -111,12 +115,12 @@ const add_sub_album_of = '{'Create a sub-album of "%s"'|@translate|escape:javasc
 
 <div class="cat-move-header"> 
   <div class="add-album-button">
-    <label class="album-add-button-label icon-plus-circled">
+    <label class="head-button-2 icon-add-album">
       <p>{'Add Album'|@translate}</p>
     </label>
   </div>
   <div class="order-root-button">
-    <label class="order-root order-root-button-label icon-sort-name-up">
+    <label class="order-root head-button-2 icon-sort-name-up">
       <p>{'Automatic sort order'|@translate}</p>
     </label>
   </div>
@@ -128,7 +132,7 @@ const add_sub_album_of = '{'Create a sub-album of "%s"'|@translate|escape:javasc
     <a class="icon-cancel CloseAddAlbum"></a>
     
     <div class="AddIconContainer">
-      <span class="AddIcon icon-blue icon-plus-circled"></span>
+      <span class="AddIcon icon-blue icon-add-album"></span>
     </div>
     <div class="AddIconTitle">
       <span></span>
@@ -147,12 +151,12 @@ const add_sub_album_of = '{'Create a sub-album of "%s"'|@translate|escape:javasc
         <div class="AddAlbumRadioInput">
           <input type="radio" id="place-start"
           name="position" value="first" {if "first" == {$POS_PREF}} checked {/if}>
-          <label for="place-start">{'Placer au début'|translate}</label>
+          <label for="place-start">{'Place first'|translate}</label>
         </div>
         <div class="AddAlbumRadioInput">
           <input type="radio" id="place-end"
           name="position" value="last" {if "last" == {$POS_PREF}} checked {/if}>
-          <label for="place-end">{'Placer à la fin'|translate}</label>
+          <label for="place-end">{'Place last'|translate}</label>
         </div>
       </div>
     </div>
@@ -274,6 +278,10 @@ const add_sub_album_of = '{'Create a sub-album of "%s"'|@translate|escape:javasc
       border: 20px solid #ff7700;
       opacity: 0;
   }
+}
+
+.add-album-button label::before {
+  margin-right: 7px;
 }
 
 #AddAlbum, #DeleteAlbum, #RenameAlbum {
@@ -478,11 +486,6 @@ input[name="position"] {
   margin: 0 !important;
 }
 
-.add-album-button,
-.order-root-button {
-  margin: 0 10px 0 0;
-}
-
 .badge-container {
   position: absolute;
   right: 275px;
@@ -526,31 +529,17 @@ input[name="position"] {
 
 .dragging .move-cat-container .move-cat-toogler,
 .dragging .move-cat-container .move-cat-action-cont a,
-.dragging .move-cat-container .move-cat-title-container,
-.dragging .move-cat-action-small {
+.dragging .move-cat-container .move-cat-title-container{
   pointer-events: all;
 }
 
-.move-cat-action-small {
-  display: none;
-  position: relative;
-  right: 10px;
-  font-weight: bold;
-  cursor: pointer;
-  transform: scale(1.2);
-  padding: 20px 10px;
-}
-
-#catOptionsSmall .dropdown-option {
-  font-size: 10px;
-  font-weight: bold;
-}
-#catOptionsSmall .dropdown-option::before{
-  margin: 0 6px 0 -2px;
-}
 
 .last-update {
     display: none;
+}
+
+.badge-container .nb-sub-photos::before {
+  margin-right: 6px;
 }
 
 @media (max-width: 1415px) { 
@@ -574,22 +563,24 @@ input[name="position"] {
     display: none;
   }
 
-  .move-cat-action {
-    display: none;
-  }
-
-  .move-cat-action-small {
-    display: flex;
+  ul.jqtree-tree ul.jqtree_common {
+    margin-left: 20px !important;
   }
 
   .move-cat-title-container {
-    max-width: 80%;
+    max-width: 60%;
+  }
+}
+
+@media (max-width: 1100px) { 
+  .move-cat-title-container {
+    max-width: 50%;
   }
 }
 
 @media (max-width: 850px) { 
   .move-cat-title-container {
-    max-width: 60%;
+    max-width: 40%;
   }
 }
 
